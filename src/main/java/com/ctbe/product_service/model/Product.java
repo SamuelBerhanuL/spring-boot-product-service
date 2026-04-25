@@ -1,6 +1,7 @@
 package com.ctbe.product_service.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 
@@ -19,17 +20,29 @@ public class Product {
     @Column(nullable = false)
     private double price;
 
+    @Min(value = 0, message = "Stock quantity cannot be negative")
+    private int stockQty;
+
+    @NotBlank(message = "Category is required")
+    private String category;
+
     public Product() {}
 
-    public Product(String name, double price){
+    public Product(String name, double price, int stockQty, String category){
         this.name = name;
         this.price = price;
+        this.stockQty = stockQty;
+        this.category = category;
     }
 
     public Long getId() { return id; }
     public String getName(){  return name;}
     public double getPrice(){ return price; }
+    public int getStockQty() { return stockQty; }
+    public String getCategory() { return category; }
     public void setId(Long id){ this.id = id;}
     public void setName(String name){ this.name = name;}
     public void setPrice(double price) { this.price = price;}
+    public void setStockQty(int q) { this.stockQty = q; }
+    public void setCategory(String c){ this.category = c; }
 }
