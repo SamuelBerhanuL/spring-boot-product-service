@@ -2,6 +2,7 @@ package com.ctbe.product_service.service;
 
 import com.ctbe.product_service.dto.ProductRequest;
 import com.ctbe.product_service.dto.ProductResponse;
+import com.ctbe.product_service.exception.ResourceNotFoundException;
 import com.ctbe.product_service.model.Product;
 import com.ctbe.product_service.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class ProductService {
     }
 
     public ProductResponse findById(Long id) {
-        Product p = repo.findById(id).orElseThrow();
+        Product p = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
         return toResponse(p);
     }
 
@@ -32,7 +33,7 @@ public class ProductService {
     }
 
     public ProductResponse update(Long id, ProductRequest req) {
-        Product existing = repo.findById(id).orElseThrow();
+        Product existing = repo.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
 
         existing.setName(req.getName());
         existing.setPrice(req.getPrice());
@@ -43,6 +44,9 @@ public class ProductService {
     }
 
     public void delete(Long id) {
+        if (!repo.existsById(id)) {
+            throw new ResourceNotFoundException(id);
+        }
         repo.deleteById(id);
     }
 
