@@ -1,34 +1,67 @@
 package com.ctbe.product_service.service;
 
+import com.ctbe.product_service.dto.ProductRequest;
+import com.ctbe.product_service.dto.ProductResponse;
 import com.ctbe.product_service.model.Product;
 import com.ctbe.product_service.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductService {
-    private final ProductRepository productRepository;
 
-    // Constructor injection — preferred over @Autowired on a field
-    public ProductService(ProductRepository productRepository){
-        this.productRepository = productRepository;
+    private final ProductRepository repo;
+
+    public ProductService(ProductRepository repo) {
+        this.repo = repo;
     }
 
-    /** Return all products from the database. */
-    public List<Product> findAll(){
-        return productRepository.findAll();
+    public List<ProductResponse> findAll() {
+        return repo.findAll().stream().map(this::toResponse).toList();
     }
 
-    /** Return a single product by ID, or empty if not found. */
-    public Optional<Product> findById(Long id){
-        return productRepository.findById(id);
+    public ProductResponse findById(Long id) {
+        Product p = repo.findById(id).orElseThrow();
+        return toResponse(p);
     }
 
-    /** Persist a new or updated product and return the saved entity. */
-    public Product save(Product product){
-        return productRepository.save(product);
+    public ProductResponse create(ProductRequest req) {
+        Product saved = repo.save(toEntity(req));
+        return toResponse(saved);
+    }
 
+    public ProductResponse update(Long id, ProductRequest req) {
+        Product existing = repo.findById(id).orElseThrow();
+
+        existing.setName(req.getName());
+        existing.setPrice(req.getPrice());
+        existing.setStockQty(req.getStockQty());
+        existing.setCategory(req.getCategory());
+
+        return toResponse(repo.save(existing));
+    }
+
+    public void delete(Long id) {
+        repo.deleteById(id);
+    }
+
+    private ProductResponse toResponse(Product p) {
+        return new ProductResponse(
+                p.getId(),
+                p.getName(),
+                p.getPrice(),
+                p.getStockQty(),
+                p.getCategory()
+        );
+    }
+
+    private Product toEntity(ProductRequest req) {
+        return new Product(
+                req.getName(),
+                req.getPrice(),
+                req.getStockQty(),
+                req.getCategory()
+        );
     }
 }
